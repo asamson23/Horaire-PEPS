@@ -1,0 +1,63 @@
+// SCSS using Sass modules
+@use 'variables' as *;
+@use 'mixins' as *;
+@use 'filters';
+
+// Base
+body {
+  background-color: $color-light-bg;
+  color: $color-light-text;
+
+  &.dark-mode {
+    background-color: $color-dark-bg;
+    color: $color-dark-text;
+
+    .card {
+      background-color: $color-card-bg-dark;
+      color: $color-dark-text;
+    }
+
+    .activite-post-it {
+      background-color: $color-postit-dark;
+    }
+
+    // dark-mode filter border handled in filters partial
+  }
+}
+
+.card {
+  margin-bottom: 30px;
+  padding: 15px;
+  background-color: $color-card-bg-light;
+  color: $color-light-text;
+}
+
+.weekend-card {
+  background-color: $color-weekend !important;
+  color: $color-light-text !important;
+}
+
+.icon-small {
+  font-size: 0.75em;
+  margin-right: 0.3rem;
+  vertical-align: middle;
+}
+
+.activite-post-it {
+  background-color: $color-postit;
+  color: #ffffff;
+  padding: 5px 10px;
+  margin-bottom: 1rem;
+  border-radius: 5px;
+  font-weight: bold;
+
+  p { margin-bottom: 0; }
+}
+
+.thin-divider {
+  border: none;
+  border-top: 1px solid $color-divider;
+  margin: 10px 0;
+}
+
+// Filters styles are defined in _filters.scss

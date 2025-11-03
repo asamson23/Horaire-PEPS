@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS / Editor junk
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Sass caches
+.sass-cache/
+.cache/
+
+# Build outputs (generated)
+css/*.min.css
+css/*.min.css.map
+js/app.js
+js/*.min.js
+js/*.min.js.map
+
+# Misc
+.env
+.env.*

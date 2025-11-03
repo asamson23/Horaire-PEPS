@@ -1,0 +1,8 @@
+// Mixins
+@mixin bordered-box($border-color: rgba(0, 0, 0, .125)) {
+  border: 1px solid $border-color;
+  border-radius: .5rem;
+  padding: .5rem .75rem;
+  background: transparent;
+}
+

@@ -1,0 +1,17 @@
+@use 'mixins' as *;
+
+/* Filters UI */
+.filters-list {
+  max-height: 220px;
+  overflow: auto;
+  @include bordered-box();
+
+  .form-check { margin-bottom: .25rem; }
+}
+
+body.dark-mode {
+  .filters-list {
+    border-color: rgba(255, 255, 255, .25);
+  }
+}
+
