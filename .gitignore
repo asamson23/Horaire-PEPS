@@ -17,13 +17,6 @@ Thumbs.db
 .sass-cache/
 .cache/
 
-# Build outputs (generated)
-css/*.min.css
-css/*.min.css.map
-js/app.js
-js/*.min.js
-js/*.min.js.map
-
 # Misc
 .env
 .env.*
