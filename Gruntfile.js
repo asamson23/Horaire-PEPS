@@ -27,7 +27,8 @@ module.exports = function(grunt) {
         files: {
           'js/app.js': [
             'src/js/script.js',
-            'src/js/filters.js'
+            'src/js/filters.js',
+            'src/js/pwa.js'
           ]
         }
       }
