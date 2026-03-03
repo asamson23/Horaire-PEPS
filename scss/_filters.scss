@@ -15,3 +15,42 @@ body.dark-mode {
   }
 }
 
+/* Collapsible filter section headers */
+.filter-toggle {
+  cursor: pointer;
+  user-select: none;
+
+  i.chevron {
+    display: inline-block;
+    transition: transform 0.3s ease;
+  }
+
+  &.open i.chevron {
+    transform: rotate(180deg);
+  }
+}
+
+.filter-collapse {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+
+  &.open {
+    max-height: 400px;
+  }
+}
+
+/* Search keyword highlighting */
+mark.search-highlight {
+  background-color: #fff3cd;
+  color: inherit;
+  padding: 0 .1em;
+  border-radius: .2em;
+}
+
+body.dark-mode {
+  mark.search-highlight {
+    background-color: #6c4a00;
+    color: #fff3cd;
+  }
+}
