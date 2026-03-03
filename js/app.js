@@ -119,16 +119,31 @@ $(document).ready(function() {
     bar.innerHTML = `
       <div class="row gy-3 align-items-start">
         <div class="col-12 col-lg-4">
-          <h6 class="mb-2"><i class="fa-solid fa-clock"></i> Heures</h6>
-          <div id="opts-heure" class="filters-list small"></div>
+          <h6 class="mb-2 filter-toggle" role="button" tabindex="0" data-target="collapse-heure">
+            <i class="fa-solid fa-clock"></i> Heures
+            <i class="fa-solid fa-chevron-down chevron ms-1 float-end"></i>
+          </h6>
+          <div id="collapse-heure" class="filter-collapse">
+            <div id="opts-heure" class="filters-list small"></div>
+          </div>
         </div>
         <div class="col-12 col-lg-4">
-          <h6 class="mb-2"><i class="fa-solid fa-circle-info"></i> Informations</h6>
-          <div id="opts-informations" class="filters-list small"></div>
+          <h6 class="mb-2 filter-toggle" role="button" tabindex="0" data-target="collapse-informations">
+            <i class="fa-solid fa-circle-info"></i> Informations
+            <i class="fa-solid fa-chevron-down chevron ms-1 float-end"></i>
+          </h6>
+          <div id="collapse-informations" class="filter-collapse">
+            <div id="opts-informations" class="filters-list small"></div>
+          </div>
         </div>
         <div class="col-12 col-lg-4">
-          <h6 class="mb-2"><i class="fa-solid fa-water"></i> Configuration</h6>
-          <div id="opts-configuration" class="filters-list small"></div>
+          <h6 class="mb-2 filter-toggle" role="button" tabindex="0" data-target="collapse-configuration">
+            <i class="fa-solid fa-water"></i> Configuration
+            <i class="fa-solid fa-chevron-down chevron ms-1 float-end"></i>
+          </h6>
+          <div id="collapse-configuration" class="filter-collapse">
+            <div id="opts-configuration" class="filters-list small"></div>
+          </div>
         </div>
         <div class="col-12">
           <div class="input-group" style="max-width: 520px;">
@@ -180,16 +195,33 @@ $(document).ready(function() {
   }
 
   function extractLinesFromSection(sec) {
-    let items = Array.from(sec.querySelectorAll('li, .activite-schedule-row, p, tr, h4, h5, span'))
+    // Collect candidates: no span, no tr (avoid redundancy from nested elements)
+    const candidates = Array.from(
+      sec.querySelectorAll('li, .activite-schedule-row, p, h4, h5')
+    );
+
+    // Keep only leaf candidates (exclude ancestors of other candidates)
+    // e.g. a <p> containing <li> children is excluded; only the <li>s are kept
+    const leaves = candidates.filter(el =>
+      !candidates.some(other => el !== other && el.contains(other))
+    );
+
+    // Get heading text to exclude from options
+    const headingEl = sec.querySelector('h3');
+    const headingText = headingEl ? normalizeOption(headingEl.textContent || '') : '';
+
+    let items = leaves
       .map(el => normalizeOption(el.textContent || ''))
-      .filter(t => t.length > 0);
+      .filter(t => t.length >= 3 && t.length <= 100 && t !== headingText);
+
+    // Fallback: if nothing found, split raw text
     if (items.length === 0) {
       items = (sec.textContent || '')
         .split(/\n|•|\u2022| - | \| /)
         .map(normalizeOption)
-        .filter(t => t.length > 0);
+        .filter(t => t.length >= 3 && t.length <= 100 && t !== headingText);
     }
-    // Deduplicate within the section
+
     return Array.from(new Set(items));
   }
 
@@ -261,10 +293,29 @@ $(document).ready(function() {
     return true;
   }
 
+  function applyHighlights() {
+    document.querySelectorAll('#schedule .card .card-text').forEach(ct => {
+      const original = ct.getAttribute('data-original-html');
+      if (original === null) return;
+      ct.innerHTML = original; // restore before re-applying to avoid stacking marks
+      if (selectedKeywords.size === 0) return;
+      let html = ct.innerHTML;
+      selectedKeywords.forEach(kw => {
+        if (!kw) return;
+        const escaped = kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        // Negative lookahead prevents replacing text inside HTML tag attributes
+        const re = new RegExp(`(${escaped})(?![^<]*>)`, 'gi');
+        html = html.replace(re, '<mark class="search-highlight">$1</mark>');
+      });
+      ct.innerHTML = html;
+    });
+  }
+
   function applyFilters() {
     document.querySelectorAll('#schedule .card').forEach(card => {
       card.classList.toggle('d-none', !cardMatchesSelections(card));
     });
+    applyHighlights();
   }
 
   function updateSearchSuggestions() {
@@ -282,7 +333,6 @@ $(document).ready(function() {
         if (key.includes(q)) pool.set(key, v.label);
       });
     });
-    // Also include free-text suggestions from current visible content could be added here if desired
 
     const suggestions = Array.from(pool.values()).sort((a,b) => a.localeCompare(b, 'fr')).slice(0, 30);
     suggestionsHost.innerHTML = suggestions.map(label => {
@@ -330,6 +380,22 @@ $(document).ready(function() {
       if (input) input.value = '';
       updateSearchSuggestions();
     });
+
+    // Collapse toggles for each filter section (no Bootstrap JS needed)
+    document.querySelectorAll('.filter-toggle').forEach(h6 => {
+      const activate = () => {
+        const targetId = h6.getAttribute('data-target');
+        const panel = document.getElementById(targetId);
+        if (!panel) return;
+        const isOpen = panel.classList.contains('open');
+        panel.classList.toggle('open', !isOpen);
+        h6.classList.toggle('open', !isOpen);
+      };
+      h6.addEventListener('click', activate);
+      h6.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(); }
+      });
+    });
   }
 
   function setup() {
@@ -339,6 +405,10 @@ $(document).ready(function() {
 
     ensureToolbar();
     annotateSections();
+    // Save original card HTML (with sections already annotated) for highlight restore
+    document.querySelectorAll('#schedule .card .card-text').forEach(ct => {
+      ct.setAttribute('data-original-html', ct.innerHTML);
+    });
     collectOptions();
     renderOptions();
     bindEvents();
@@ -352,7 +422,6 @@ $(document).ready(function() {
   window.addEventListener('schedule:ready', setup);
   document.addEventListener('DOMContentLoaded', () => setTimeout(setup, 0));
 })();
-
 
 // Register service worker for PWA
 (function() {
